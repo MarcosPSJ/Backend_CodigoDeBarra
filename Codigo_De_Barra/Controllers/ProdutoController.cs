@@ -1,5 +1,6 @@
 ﻿using Codigo_De_Barra.Database;
 using Codigo_De_Barra.DTO;
+using Codigo_De_Barra.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -55,7 +56,7 @@ namespace Codigo_De_Barra.Controllers
         [HttpPost]
         public ActionResult<Produto> CreateProduto(ProdutoDTO novoProdutoDTO)
         {
-            Produto novoProduto = new Produto(novoProdutoDTO.nome, novoProdutoDTO.descricao, novoProdutoDTO.preco, novoProdutoDTO.codigoDeBarra);
+            Produto novoProduto = new Produto(novoProdutoDTO.nome, novoProdutoDTO.descricao, novoProdutoDTO.preco, novoProdutoDTO.codigoDeBarra, imagemURL: novoProdutoDTO.imagemURL);
 
             try
             {

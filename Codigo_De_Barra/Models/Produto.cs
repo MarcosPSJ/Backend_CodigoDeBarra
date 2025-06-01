@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Codigo_De_Barra
+namespace Codigo_De_Barra.Models
 {
     public class Produto
     {
@@ -15,12 +15,13 @@ namespace Codigo_De_Barra
         public string CodigoDeBarra { get; set; }
 
         
-        public Produto(string nome, string descricao, decimal preco, string codigoDeBarra)
+        public Produto(string nome, string descricao, decimal preco, string codigoDeBarra, string imagemURL)
         {
             this.Nome = nome;
             this.Descricao = descricao;
             this.Preco = preco;
             this.CodigoDeBarra = codigoDeBarra;
+            this.ImagemURL = imagemURL;
         }
         
         private Produto() { }

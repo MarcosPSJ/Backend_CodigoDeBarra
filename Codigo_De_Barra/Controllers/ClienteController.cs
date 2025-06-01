@@ -79,11 +79,19 @@ namespace Codigo_De_Barra.Controllers
             {
                 return BadRequest("Já existe um cliente com esse CPF");
             }
+            if (clienteAtualizadoDTO.Nome == "string") // Arrumar para fazer substituições
+            {
+                clienteEncontrado.Cpf = clienteAtualizadoDTO.Cpf;
+                clienteEncontrado.Email = clienteAtualizadoDTO.Email;
+                clienteEncontrado.Senha = clienteAtualizadoDTO.Senha;
+            }else
+            {
+                clienteEncontrado.Nome = clienteAtualizadoDTO.Nome;
+                clienteEncontrado.Cpf = clienteAtualizadoDTO.Cpf;
+                clienteEncontrado.Email = clienteAtualizadoDTO.Email;
+                clienteEncontrado.Senha = clienteAtualizadoDTO.Senha;
+            }
 
-            clienteEncontrado.Nome = clienteAtualizadoDTO.Nome;
-            clienteEncontrado.Cpf = clienteAtualizadoDTO.Cpf;
-            clienteEncontrado.Email = clienteAtualizadoDTO.Email;
-            clienteEncontrado.Senha = clienteAtualizadoDTO.Senha;
 
             dbContext.SaveChanges();
 

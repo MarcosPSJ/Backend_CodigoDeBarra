@@ -1,6 +1,7 @@
 
 using Codigo_De_Barra;
 using Codigo_De_Barra.Database;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -12,6 +13,8 @@ namespace WebApplication1
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+
 
             // Add services to the container.
 
@@ -45,7 +48,10 @@ namespace WebApplication1
                 });
             });
 
-            builder.Services.AddDbContext<ProdutosDbContext>();
+            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+            builder.Services.AddDbContext<ProdutosDbContext>(options =>
+                options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 
             builder.Services.AddControllers().AddJsonOptions(options =>
             {
