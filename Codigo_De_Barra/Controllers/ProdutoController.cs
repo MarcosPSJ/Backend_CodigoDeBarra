@@ -24,12 +24,12 @@ namespace Codigo_De_Barra.Controllers
         }
 
 
-        [HttpGet("{id}")]
-        public ActionResult<IEnumerable<Produto>> GetProdutoId(string id)
+        [HttpGet("/idProduto/{id}")]
+        public ActionResult<Produto> GetProdutoId(string id)
         {
             Produto? produto = dbContext
                 .Produtos
-                .FirstOrDefault(p => p.CodigoDeBarra == id);
+                .FirstOrDefault(p => p.Id == id);
 
             if (produto is null)
             {
@@ -116,7 +116,7 @@ namespace Codigo_De_Barra.Controllers
 
 
         [HttpPut("{id}")]
-        public IActionResult UpdateProduto(string id, ProdutoDTO produtoAAtualizarDTO)
+        public IActionResult UpdateProduto(string id, ProdutoDTO produtoAtualizadoDTO)
         {
             Produto? produtoEncontrado = 
                 dbContext
@@ -127,15 +127,15 @@ namespace Codigo_De_Barra.Controllers
             { 
                 return NotFound(); 
             }
-            if (dbContext.Produtos.Any(produto => produto.CodigoDeBarra == produtoAAtualizarDTO.codigoDeBarra && produto.Id != id )) // dbContext.Produtos.Any(produto => produto.Id != id)//)
+            if (dbContext.Produtos.Any(produto => produto.CodigoDeBarra == produtoAtualizadoDTO.codigoDeBarra && produto.Id != id ))
             {
                 return BadRequest("Codigo de barra já existente!");
             }
+            if (produtoAtualizadoDTO.nome != "string") { produtoEncontrado.Nome = produtoAtualizadoDTO.nome; }
+            if (produtoAtualizadoDTO.descricao != "string") { produtoEncontrado.Descricao = produtoAtualizadoDTO.descricao; }
+            if (produtoAtualizadoDTO.preco != 0) { produtoEncontrado.Preco = produtoAtualizadoDTO.preco; } // levando em consideração que o não se vendo prutos com preço 0
+            if (produtoAtualizadoDTO.codigoDeBarra != "string") { produtoEncontrado.CodigoDeBarra = produtoAtualizadoDTO.codigoDeBarra; }
 
-            produtoEncontrado.Nome = produtoAAtualizarDTO.nome;
-            produtoEncontrado.Descricao = produtoAAtualizarDTO.descricao;
-            produtoEncontrado.Preco = produtoAAtualizarDTO.preco;
-            produtoEncontrado.CodigoDeBarra = produtoAAtualizarDTO.codigoDeBarra;
             dbContext.SaveChanges();
 
             return NoContent();

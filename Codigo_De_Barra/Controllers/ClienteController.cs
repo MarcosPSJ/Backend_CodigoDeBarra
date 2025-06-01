@@ -79,19 +79,12 @@ namespace Codigo_De_Barra.Controllers
             {
                 return BadRequest("Já existe um cliente com esse CPF");
             }
-            if (clienteAtualizadoDTO.Nome == "string") // Arrumar para fazer substituições
-            {
-                clienteEncontrado.Cpf = clienteAtualizadoDTO.Cpf;
-                clienteEncontrado.Email = clienteAtualizadoDTO.Email;
-                clienteEncontrado.Senha = clienteAtualizadoDTO.Senha;
-            }else
-            {
-                clienteEncontrado.Nome = clienteAtualizadoDTO.Nome;
-                clienteEncontrado.Cpf = clienteAtualizadoDTO.Cpf;
-                clienteEncontrado.Email = clienteAtualizadoDTO.Email;
-                clienteEncontrado.Senha = clienteAtualizadoDTO.Senha;
-            }
 
+            // Se o valor for null não altera
+            if (clienteAtualizadoDTO.Nome != "string") { clienteEncontrado.Nome = clienteAtualizadoDTO.Nome; }
+            if (clienteAtualizadoDTO.Cpf != "string") { clienteEncontrado.Cpf = clienteAtualizadoDTO.Cpf; }
+            if (clienteAtualizadoDTO.Email != "string") { clienteEncontrado.Email = clienteAtualizadoDTO.Email; }
+            if (clienteAtualizadoDTO.Senha != "string") { clienteEncontrado.Senha = clienteAtualizadoDTO.Senha; }
 
             dbContext.SaveChanges();
 
@@ -99,13 +92,13 @@ namespace Codigo_De_Barra.Controllers
         }
 
 
-        [HttpDelete("{cpf}")]
-        public IActionResult DeleteProduto(string cpf)
+        [HttpDelete("{id}")]
+        public IActionResult DeleteProduto(string id)
         {
             Cliente? clienteEncontrado =
                 dbContext
                 .Clientes
-                .FirstOrDefault(c => c.Cpf == cpf);
+                .FirstOrDefault(c => c.Id == id);
 
             if (clienteEncontrado == null)
             {

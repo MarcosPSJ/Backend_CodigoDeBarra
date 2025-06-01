@@ -4,6 +4,7 @@ using Codigo_De_Barra.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Codigo_De_Barra.Migrations
 {
     [DbContext(typeof(ProdutosDbContext))]
-    partial class ProdutosDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250601162933_DataNoPedido")]
+    partial class DataNoPedido
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -57,16 +60,16 @@ namespace Codigo_De_Barra.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("varchar(255)");
 
-                    b.Property<string>("ClienteId")
-                        .IsRequired()
-                        .HasColumnType("varchar(255)");
-
                     b.Property<DateTime>("DataPedido")
                         .HasColumnType("datetime(6)");
 
+                    b.Property<string>("NomeClienteId")
+                        .IsRequired()
+                        .HasColumnType("varchar(255)");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("ClienteId");
+                    b.HasIndex("NomeClienteId");
 
                     b.ToTable("Pedidos");
                 });
@@ -107,13 +110,13 @@ namespace Codigo_De_Barra.Migrations
 
             modelBuilder.Entity("Codigo_De_Barra.Models.Pedido", b =>
                 {
-                    b.HasOne("Codigo_De_Barra.Models.Cliente", "Cliente")
+                    b.HasOne("Codigo_De_Barra.Models.Cliente", "NomeCliente")
                         .WithMany()
-                        .HasForeignKey("ClienteId")
+                        .HasForeignKey("NomeClienteId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Cliente");
+                    b.Navigation("NomeCliente");
                 });
 
             modelBuilder.Entity("Codigo_De_Barra.Models.Produto", b =>
