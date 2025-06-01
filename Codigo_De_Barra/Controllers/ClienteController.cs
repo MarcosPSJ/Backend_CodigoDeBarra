@@ -47,14 +47,14 @@ namespace Codigo_De_Barra.Controllers
 
 
         [HttpPost]
-        public ActionResult<Cliente> CreateCliente(Cliente novoClienteDTO)
+        public ActionResult<ClienteDTOInput> CreateCliente(ClienteDTOInput novoClienteDTO)
         {
-            if (dbContext.Clientes.Any(cliente => cliente.Cpf.Equals(novoClienteDTO.Cpf)))
+            if (dbContext.Clientes.Any(cliente => cliente.Cpf.Equals(novoClienteDTO.cpf)))
             {
                 return BadRequest("Já existe um cliente com este CPF");
             }
 
-            Cliente novoCliente = new Cliente(novoClienteDTO.Nome, novoClienteDTO.Cpf, novoClienteDTO.Email, novoClienteDTO.Senha); 
+            Cliente novoCliente = new Cliente(novoClienteDTO.nome, novoClienteDTO.cpf, novoClienteDTO.email, novoClienteDTO.senha); 
 
             dbContext.Clientes.Add(novoCliente);
             dbContext.SaveChanges();

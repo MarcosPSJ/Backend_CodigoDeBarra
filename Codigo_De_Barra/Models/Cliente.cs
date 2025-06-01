@@ -21,7 +21,6 @@ namespace Codigo_De_Barra.Models
             this.Email = email;
             this.Senha = senha;
         }
-
         private Cliente() { }
     }
 }
