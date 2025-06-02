@@ -7,6 +7,38 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Database\Migrations\20250519160901_PrimeiraImigracao.cs" />
+    <Compile Remove="Database\Migrations\20250519160901_PrimeiraImigracao.Designer.cs" />
+    <Compile Remove="Database\Migrations\20250519200645_ControllersMigrations.cs" />
+    <Compile Remove="Database\Migrations\20250519200645_ControllersMigrations.Designer.cs" />
+    <Compile Remove="Database\Migrations\20250527003601_teste.cs" />
+    <Compile Remove="Database\Migrations\20250527003601_teste.Designer.cs" />
+    <Compile Remove="Database\Migrations\20250601034532_InitialCreate.cs" />
+    <Compile Remove="Database\Migrations\20250601034532_InitialCreate.Designer.cs" />
+    <Compile Remove="Database\Migrations\20250601162933_DataNoPedido.cs" />
+    <Compile Remove="Database\Migrations\20250601162933_DataNoPedido.Designer.cs" />
+    <Compile Remove="Database\Migrations\20250601195216_Pedido.cs" />
+    <Compile Remove="Database\Migrations\20250601195216_Pedido.Designer.cs" />
+    <Compile Remove="Database\Migrations\20250601203749_AjustePedido.cs" />
+    <Compile Remove="Database\Migrations\20250601203749_AjustePedido.Designer.cs" />
+    <Compile Remove="Database\Migrations\20250601235817_DeletePorId.cs" />
+    <Compile Remove="Database\Migrations\20250601235817_DeletePorId.Designer.cs" />
+    <Compile Remove="Database\Migrations\20250602012327_savechange.cs" />
+    <Compile Remove="Database\Migrations\20250602012327_savechange.Designer.cs" />
+    <Compile Remove="Database\Migrations\20250602012748_recuperandoBd.cs" />
+    <Compile Remove="Database\Migrations\20250602012748_recuperandoBd.Designer.cs" />
+    <Compile Remove="Database\Migrations\20250602014615_PostPedido.cs" />
+    <Compile Remove="Database\Migrations\20250602014615_PostPedido.Designer.cs" />
+    <Compile Remove="Database\Migrations\20250602015201_testeSave.cs" />
+    <Compile Remove="Database\Migrations\20250602015201_testeSave.Designer.cs" />
+    <Compile Remove="Database\Migrations\20250602015758_PrimeiraMigracao.cs" />
+    <Compile Remove="Database\Migrations\20250602015758_PrimeiraMigracao.Designer.cs" />
+    <Compile Remove="Database\Migrations\20250602022645_AddClienteIdToTabela.cs" />
+    <Compile Remove="Database\Migrations\20250602022645_AddClienteIdToTabela.Designer.cs" />
+    <Compile Remove="Database\Migrations\ProdutosDbContextModelSnapshot.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.11">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
@@ -14,6 +46,10 @@
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.3" />
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql.Design" Version="1.1.2" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Database\Migrations\" />
   </ItemGroup>
 
 </Project>

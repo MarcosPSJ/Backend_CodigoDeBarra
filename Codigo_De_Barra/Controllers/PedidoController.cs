@@ -23,15 +23,16 @@ namespace Codigo_De_Barra.Controllers
         [HttpGet]
         public ActionResult<IEnumerable<Pedido>> GetPedido()
         {
-            return Ok(dbContext.Pedidos.Include(p => p.Cliente).Include(p => p.Produtos));
+            return Ok(dbContext.Pedidos.Include(p => p.Cliente).Include(p => p.Produtos).OrderByDescending(p => p.DataPedido));
         }
 
         [HttpGet("{id}")]
-         public ActionResult<Pedido> GetPedido(string id) // inclued slide 
+         public ActionResult<Pedido> GetPedido(string id)
         {
             Pedido? pedido = dbContext.Pedidos
-                .Include(p => p.Cliente)
                 .Include(p => p.Produtos)
+                .Include(p => p.Cliente)
+                .OrderByDescending(p => p.DataPedido)
                 .FirstOrDefault(p => p.Id == id);
                 
             if (pedido is null)
@@ -63,7 +64,7 @@ namespace Codigo_De_Barra.Controllers
 
             Cliente? cliente = dbContext
                 .Clientes
-                .FirstOrDefault(c => c.Id == novoPedidoDTO.cliente);
+                .FirstOrDefault(c => c.Id == novoPedidoDTO.clienteId);
 
             if (cliente == null)
             {
@@ -77,8 +78,6 @@ namespace Codigo_De_Barra.Controllers
             dbContext.Pedidos.Add(novoPedido);
             dbContext.SaveChanges();
 
-
-
             return CreatedAtAction(nameof(CreatePedido), novoPedido);
         }
 
@@ -87,43 +86,34 @@ namespace Codigo_De_Barra.Controllers
         {
             Pedido? pedidoEncontrado = dbContext
                 .Pedidos
+                .Include(p => p.Produtos)
                 .FirstOrDefault(p => p.Id == id);
             
             if (pedidoEncontrado is null)
             {
-                return NotFound();
+                return NotFound("Pedido não encontrado"); // NotFound = Cliente mandou errado
             }
             if (pedidoAtualizadoDTO.produtosIds.Length == 0)
             {
-                return BadRequest("É necessario enviar a lista de produtos");
+                return BadRequest("É necessario enviar a lista de produtos"); // BadResquest = Cliente pediu algo que não existe
             }
-            foreach(string produtoId in pedidoAtualizadoDTO.produtosIds)
+
+            List<Produto> produtosVerificados = dbContext
+                .Produtos
+                .Where(produto => pedidoAtualizadoDTO.produtosIds.Contains(produto.Id))
+                .ToList();
+
+            if (produtosVerificados.Count != pedidoAtualizadoDTO.produtosIds.Length)
             {
-                Produto? produto = dbContext
-                    .Produtos
-                    .FirstOrDefault(p => p.Id == produtoId);
-                
-                if (produto == null)
-                {
-                    return BadRequest($"Produto {produto.Nome} não encontrado.");
-                }
-                if (!pedidoEncontrado.Produtos.Contains(produto))
-                {
-                    pedidoEncontrado.Produtos.Add(produto);
-                }
+                return BadRequest("Produto não encontrado");
             }
-            foreach (string produtoId in pedidoEncontrado.Produtos.Select(p => p.Id).ToList())
+
+            pedidoEncontrado.Produtos.Clear(); // Limpa os produtos do pedido antes de adicionar os novos
+            foreach (Produto produtoId in produtosVerificados)
             {
-                if (!pedidoAtualizadoDTO.produtosIds.Contains(produtoId))
+                if (!pedidoEncontrado.Produtos.Contains(produtoId))
                 {
-                    Produto? produto = dbContext
-                        .Produtos
-                        .FirstOrDefault(p => p.Id == produtoId);
-                    
-                    if (produto != null)
-                    {
-                        pedidoEncontrado.Produtos.Remove(produto);
-                    }
+                    pedidoEncontrado.Produtos.Add(produtoId);
                 }
             }
 
@@ -153,13 +143,26 @@ namespace Codigo_De_Barra.Controllers
         [HttpDelete("/deleteClientePedido/{idCliente}")]
         public IActionResult DeleteClientePedido(string idCliente)
         {
+            Cliente? clienteEncontrado = dbContext
+                .Clientes
+                .FirstOrDefault(c => c.Id == idCliente);
+            if (clienteEncontrado == null)
+            {
+                return BadRequest("Usuário não encontrado");
+            }
+            
             Pedido? pedidoEncontrado = dbContext
                 .Pedidos
-                .FirstOrDefault(p => p.Cliente.Id == idCliente);
+                .Include(p => p.Produtos)
+                .OrderByDescending(p => p.DataPedido)
+                .FirstOrDefault(p => p.Cliente.Id.Equals(idCliente));
             if (pedidoEncontrado == null)
             {
                 return NoContent();
             }
+            
+            pedidoEncontrado.Produtos.Clear(); // Limpa os produtos do pedido e evitar erros de chave estrangeira
+            dbContext.SaveChanges();
 
             dbContext.Pedidos.Remove(pedidoEncontrado);
             dbContext.SaveChanges();

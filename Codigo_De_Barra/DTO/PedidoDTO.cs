@@ -5,6 +5,6 @@ namespace Codigo_De_Barra.DTO
     public class PedidoDTO
     {
         public string[] produtosIds { get; set; }
-        public string cliente {  get; set; }
+        public string clienteId {  get; set; }
     }
 }

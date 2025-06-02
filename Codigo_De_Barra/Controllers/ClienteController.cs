@@ -64,7 +64,7 @@ namespace Codigo_De_Barra.Controllers
 
 
         [HttpPut("{id}")]
-        public IActionResult UpdateCliente(string id, ClienteDTOOutput clienteAtualizadoDTO)
+        public IActionResult UpdateCliente(string id, ClienteDTOInput clienteAtualizadoDTO)
         {
             Cliente? clienteEncontrado =
                 dbContext
@@ -75,16 +75,16 @@ namespace Codigo_De_Barra.Controllers
             {
                 return NotFound();
             }
-            if (dbContext.Clientes.Any(cliente => cliente.Id != id && cliente.Cpf.Equals(clienteAtualizadoDTO.Cpf)))
+            if (dbContext.Clientes.Any(cliente => cliente.Id != id && cliente.Cpf.Equals(clienteAtualizadoDTO.cpf)))
             {
                 return BadRequest("Já existe um cliente com esse CPF");
             }
 
             // Se o valor for null não altera
-            if (clienteAtualizadoDTO.Nome != "string") { clienteEncontrado.Nome = clienteAtualizadoDTO.Nome; }
-            if (clienteAtualizadoDTO.Cpf != "string") { clienteEncontrado.Cpf = clienteAtualizadoDTO.Cpf; }
-            if (clienteAtualizadoDTO.Email != "string") { clienteEncontrado.Email = clienteAtualizadoDTO.Email; }
-            if (clienteAtualizadoDTO.Senha != "string") { clienteEncontrado.Senha = clienteAtualizadoDTO.Senha; }
+            if (clienteAtualizadoDTO.nome != "string") { clienteEncontrado.Nome = clienteAtualizadoDTO.nome; }
+            if (clienteAtualizadoDTO.cpf != "string") { clienteEncontrado.Cpf = clienteAtualizadoDTO.cpf; }
+            if (clienteAtualizadoDTO.email != "string") { clienteEncontrado.Email = clienteAtualizadoDTO.email; }
+            if (clienteAtualizadoDTO.senha != "string") { clienteEncontrado.Senha = clienteAtualizadoDTO.senha; }
 
             dbContext.SaveChanges();
 
