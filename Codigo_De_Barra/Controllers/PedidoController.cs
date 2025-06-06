@@ -108,7 +108,7 @@ namespace Codigo_De_Barra.Controllers
                 return BadRequest("Produto não encontrado");
             }
 
-            pedidoEncontrado.Produtos.Clear(); // Limpa os produtos do pedido antes de adicionar os novos
+            pedidoEncontrado.Produtos.Clear(); // Limpa os produtos do pedido antes de adicionar os 
             foreach (Produto produtoId in produtosVerificados)
             {
                 if (!pedidoEncontrado.Produtos.Contains(produtoId))
@@ -162,7 +162,6 @@ namespace Codigo_De_Barra.Controllers
             }
             
             pedidoEncontrado.Produtos.Clear(); // Limpa os produtos do pedido e evitar erros de chave estrangeira
-            dbContext.SaveChanges();
 
             dbContext.Pedidos.Remove(pedidoEncontrado);
             dbContext.SaveChanges();

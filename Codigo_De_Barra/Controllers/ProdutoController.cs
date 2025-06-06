@@ -20,7 +20,7 @@ namespace Codigo_De_Barra.Controllers
         [HttpGet]
         public ActionResult<IEnumerable<Produto>> GetProdutos()
         {
-            return Ok(dbContext.Produtos);
+            return Ok(dbContext.Produtos.OrderBy(p => p.Nome));
         }
 
 
@@ -52,65 +52,58 @@ namespace Codigo_De_Barra.Controllers
             return Ok(produto);
         }
 
-
         [HttpPost]
-        public ActionResult<Produto> CreateProduto(ProdutoDTO novoProdutoDTO)
+        public async Task<ActionResult<Produto>> CreateProduto([FromForm] ProdutoDTO novoProdutoDTO, IFormFile imagem)
         {
-            Produto novoProduto = new Produto(novoProdutoDTO.nome, novoProdutoDTO.descricao, novoProdutoDTO.preco, novoProdutoDTO.codigoDeBarra, imagemURL: novoProdutoDTO.imagemURL);
+
+            if (dbContext.Produtos.Any(produto => produto.CodigoDeBarra == novoProdutoDTO.codigoDeBarra))
+            {
+                return BadRequest("Codigo de barra já existente!");
+            }
+
+            if (imagem == null || imagem.Length == 0)
+            {
+                return BadRequest("Imagem obrigatória");
+            }
+
+            string extensaoArquivo = Path.GetExtension(imagem.FileName);
+            string nomePasta = "produtos";
+            string caminhoDaPastaDeUploads = Path.Combine("wwwroot", nomePasta);
+            Directory.CreateDirectory(caminhoDaPastaDeUploads);
+
+            string nomeDoArquivo = $"{Guid.NewGuid}.{extensaoArquivo}";
+            string caminhoDoArquivo = Path.Combine(caminhoDaPastaDeUploads, nomeDoArquivo);
+
+            using (var stream = new FileStream(caminhoDoArquivo, FileMode.Create))
+            {
+                await imagem.CopyToAsync(stream);
+            }
+
+            string urlServidor = $"{Request.Scheme}:{Request.Host}";
+            string imagemUrl = $"{urlServidor}/{nomePasta}/{nomeDoArquivo}";
+
+
+            Produto novoProduto = new Produto(
+                novoProdutoDTO.nome,
+                novoProdutoDTO.descricao,
+                novoProdutoDTO.preco,
+                novoProdutoDTO.codigoDeBarra,
+                imagemURL: imagemUrl
+            );
 
             try
             {
                 dbContext.Produtos.Add(novoProduto);
                 dbContext.SaveChanges();
-            }catch (Exception ex)
+
+            }
+            catch (Exception ex)
             {
                 return BadRequest($"Erro ao criar produto: {ex.Message}");
             }
-
-
+            
 
             return CreatedAtAction(nameof(CreateProduto), novoProduto);
-        }
-
-        [HttpPost("{id}/Upload")]
-        public async Task<ActionResult<Produto>> UploadImage(string id, IFormFile arquivo)
-        {
-            if (arquivo == null || arquivo.Length == 0)
-            {
-                return BadRequest("No image found");
-            }
-
-            Produto? produto = dbContext
-                .Produtos
-                .FirstOrDefault(p => p.Id == id);
-
-            if (produto is null)
-            {
-                return NotFound();
-            }
-
-            string extensaoArquivo = arquivo.FileName.Substring(arquivo.FileName.LastIndexOf(".") + 1);
-
-            string nomePasta = "produtos";
-            string caminhoDaPastaDeUploads = Path.Combine("wwwroot", nomePasta);
-            Directory.CreateDirectory(caminhoDaPastaDeUploads);
-
-            string nomeDoArquivo = $"{id}.{extensaoArquivo}";
-            string caminhoDoArquivo = Path.Combine(caminhoDaPastaDeUploads, nomeDoArquivo);
-
-            using (var stream = new FileStream(caminhoDoArquivo, FileMode.Create))
-            {
-                await arquivo.CopyToAsync(stream);
-            }
-
-            string urlServidor = $"{Request.Scheme}:{Request.Host}";
-
-            string imagemUrl = $"{urlServidor}/{nomePasta}/{nomeDoArquivo}";
-
-            produto.ImagemURL = imagemUrl;
-            dbContext.SaveChanges();
-
-            return CreatedAtAction(nameof(UploadImage), produto);
         }
 
 
