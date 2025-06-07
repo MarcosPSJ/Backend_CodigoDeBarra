@@ -43,6 +43,30 @@ namespace Codigo_De_Barra.Controllers
             return Ok(pedido);
         }
 
+        [HttpGet("pedidosPorCliente/{idCliente}")]
+        public ActionResult<IEnumerable<Pedido>> GetPedidosPorCliente(string idCliente)
+        {
+            Cliente? cliente = dbContext
+                .Clientes
+                .FirstOrDefault(c => c.Id == idCliente);
+            
+            if (cliente is null)
+            {
+                return BadRequest("Usuário não encontrado");
+            }
+            IEnumerable<Pedido> pedidos = dbContext
+                .Pedidos
+                .Include(p => p.Produtos)
+                .Include(p => p.Cliente)
+                .Where(p => p.Cliente.Id.Equals(idCliente))
+                .OrderByDescending(p => p.DataPedido);
+            if (!pedidos.Any())
+            {
+                return NoContent();
+            }
+            return Ok(pedidos);
+        }
+
         [HttpPost]
         public ActionResult<Pedido> CreatePedido(PedidoDTO novoPedidoDTO)
         {

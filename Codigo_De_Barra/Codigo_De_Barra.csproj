@@ -50,6 +50,7 @@
 
   <ItemGroup>
     <Folder Include="Database\Migrations\" />
+    <Folder Include="wwwroot\produtos\" />
   </ItemGroup>
 
 </Project>

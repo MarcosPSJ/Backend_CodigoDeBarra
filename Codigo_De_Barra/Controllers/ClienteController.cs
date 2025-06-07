@@ -3,6 +3,7 @@ using Codigo_De_Barra.DTO;
 using Codigo_De_Barra.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Codigo_De_Barra.Controllers
 {
@@ -110,16 +111,24 @@ namespace Codigo_De_Barra.Controllers
 
 
         [HttpDelete("{id}")]
-        public IActionResult DeleteProduto(string id)
+        public IActionResult DeleteCliente(string id)
         {
             Cliente? clienteEncontrado =
                 dbContext
                 .Clientes
+                .Include(c => c.Pedidos)
+                    .ThenInclude(p => p.Produtos) // Inclui os produtos dos pedidos do cliente
                 .FirstOrDefault(c => c.Id == id);
 
             if (clienteEncontrado == null)
             {
                 return NotFound();
+            }
+
+            foreach (Pedido pedido in clienteEncontrado.Pedidos)
+            {
+                pedido.Produtos.Clear(); // Limpa os produtos do pedido antes de remover
+                dbContext.Pedidos.Remove(pedido);
             }
 
             dbContext.Clientes.Remove(clienteEncontrado);

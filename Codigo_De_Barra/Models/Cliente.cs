@@ -13,6 +13,7 @@ namespace Codigo_De_Barra.Models
         public string Cpf { get; set; }
         public string Email { get; set; }
         public string Senha { get; set; }
+        public List<Pedido> Pedidos { get; set; } = new();
 
         public Cliente(string nome, string cpf, string email, string senha)
         {
