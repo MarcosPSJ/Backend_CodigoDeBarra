@@ -63,7 +63,24 @@ namespace Codigo_De_Barra.Controllers
         }
 
 
-        [HttpPut("{id}")]
+        [HttpPost("login")]
+        public ActionResult<Cliente> LoginCliente(LoginDTO loginDTO)
+        {
+            Cliente? cliente = dbContext
+                .Clientes
+                .FirstOrDefault(c => c.Email == loginDTO.email && c.Senha == loginDTO.senha);
+            if (cliente is null)
+            {
+                return Unauthorized("Email ou senha inválidos");
+            }
+
+            ClienteDTOOutput clienteDTO = new ClienteDTOOutput(cliente.Id, cliente.Nome, cliente.Cpf, cliente.Email);
+            
+            return Ok(clienteDTO);
+        }
+
+
+        [HttpPatch("{id}")]
         public IActionResult UpdateCliente(string id, ClienteDTOInput clienteAtualizadoDTO)
         {
             Cliente? clienteEncontrado =

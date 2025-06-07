@@ -24,7 +24,7 @@ namespace Codigo_De_Barra.Controllers
         }
 
 
-        [HttpGet("/idProduto/{id}")]
+        [HttpGet("idProduto/{id}")]
         public ActionResult<Produto> GetProdutoId(string id)
         {
             Produto? produto = dbContext
@@ -39,8 +39,8 @@ namespace Codigo_De_Barra.Controllers
         }
 
 
-        [HttpGet("/codigoDeBarras/{codigoDeBarra}")]
-        public ActionResult<IEnumerable<Produto>> GetProduto(string codigoDeBarra)
+        [HttpGet("codigoDeBarras/{codigoDeBarra}")]
+        public ActionResult<Produto> GetProdutoCodigoDeBarra(string codigoDeBarra)
         {
             Produto? produto = dbContext
                 .Produtos
@@ -49,6 +49,20 @@ namespace Codigo_De_Barra.Controllers
             {
                 return NotFound();
             }
+            return Ok(produto);
+        }
+
+        [HttpGet("nameProduct/{nomeProduto}")]
+        public ActionResult<Produto> GetProdutoNome(string nomeProduto)
+        {
+            Produto? produto = dbContext
+                .Produtos
+                .FirstOrDefault(p => p.Nome == nomeProduto);
+            if (produto is null)
+            {
+                return NotFound();
+            }
+
             return Ok(produto);
         }
 
@@ -108,7 +122,7 @@ namespace Codigo_De_Barra.Controllers
 
 
 
-        [HttpPut("{id}")]
+        [HttpPatch("{id}")]
         public IActionResult UpdateProduto(string id, ProdutoDTO produtoAtualizadoDTO)
         {
             Produto? produtoEncontrado = 

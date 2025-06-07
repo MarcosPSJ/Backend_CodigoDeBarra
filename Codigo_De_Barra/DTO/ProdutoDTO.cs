@@ -9,6 +9,5 @@ namespace Codigo_De_Barra.DTO
         public string descricao { get; set; }
         public decimal preco { get; set; }
         public string codigoDeBarra { get; set; }
-        public string imagemURL { get; set; } 
     }
 }
