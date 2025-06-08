@@ -1,28 +1,30 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Codigo_De_Barra.Models;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Codigo_De_Barra.Models
+public class Pedido
 {
-    public class Pedido
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    [Key]
+    public string Id { get; set; }
+    public Cliente Cliente { get; set; }
+    public DateTime DataPedido { get; set; }
+
+    public List<PedidoProduto> PedidoProdutos { get; set; } = new();
+
+    public decimal ValorTotal
     {
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        [Key]
-        public string Id { get; set; }
-        public List<Produto> Produtos { get; set; } = new List<Produto>();
-        public Cliente Cliente { get; set; }
-        public DateTime DataPedido { get; set; }
-        public decimal ValorTotal { get {
-                return this.Produtos.Sum(p => p.Preco);
-            }
-        }
-
-        public Pedido(List<Produto> produtos, Cliente nomeCliente, DateTime data)
+        get
         {
-            this.Produtos = produtos;
-            this.Cliente = nomeCliente;
-            this.DataPedido = data;
+            return PedidoProdutos.Sum(pp => pp.Produto.Preco);
         }
-
-        private Pedido() { }
     }
+
+    public Pedido(Cliente cliente, DateTime data)
+    {
+        this.Cliente = cliente;
+        this.DataPedido = data;
+    }
+
+    private Pedido() { }
 }

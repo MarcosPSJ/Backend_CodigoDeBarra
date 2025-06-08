@@ -117,7 +117,7 @@ namespace Codigo_De_Barra.Controllers
                 dbContext
                 .Clientes
                 .Include(c => c.Pedidos)
-                    .ThenInclude(p => p.Produtos) // Inclui os produtos dos pedidos do cliente
+                    .ThenInclude(p => p.PedidoProdutos) // Inclui os produtos dos pedidos do cliente
                 .FirstOrDefault(c => c.Id == id);
 
             if (clienteEncontrado == null)
@@ -127,7 +127,7 @@ namespace Codigo_De_Barra.Controllers
 
             foreach (Pedido pedido in clienteEncontrado.Pedidos)
             {
-                pedido.Produtos.Clear(); // Limpa os produtos do pedido antes de remover
+                pedido.PedidoProdutos.Clear(); // Limpa os produtos do pedido antes de remover
                 dbContext.Pedidos.Remove(pedido);
             }
 

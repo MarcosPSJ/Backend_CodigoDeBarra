@@ -85,7 +85,7 @@ namespace Codigo_De_Barra.Controllers
             string caminhoDaPastaDeUploads = Path.Combine("wwwroot", nomePasta);
             Directory.CreateDirectory(caminhoDaPastaDeUploads);
 
-            string nomeDoArquivo = $"{Guid.NewGuid}.{extensaoArquivo}";
+            string nomeDoArquivo = $"{Guid.NewGuid()}{extensaoArquivo}";
             string caminhoDoArquivo = Path.Combine(caminhoDaPastaDeUploads, nomeDoArquivo);
 
             using (var stream = new FileStream(caminhoDoArquivo, FileMode.Create))

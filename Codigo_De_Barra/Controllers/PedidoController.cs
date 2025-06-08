@@ -4,9 +4,6 @@ using Codigo_De_Barra.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
-using System.Drawing;
-using System.Security.Claims;
 
 namespace Codigo_De_Barra.Controllers
 {
@@ -23,18 +20,17 @@ namespace Codigo_De_Barra.Controllers
         [HttpGet]
         public ActionResult<IEnumerable<Pedido>> GetPedido()
         {
-            return Ok(dbContext.Pedidos.Include(p => p.Cliente).Include(p => p.Produtos).OrderByDescending(p => p.DataPedido));
+            return Ok(dbContext.Pedidos.Include(p => p.Cliente).Include(p => p.PedidoProdutos).ThenInclude(pp => pp.Produto).OrderByDescending(p => p.DataPedido));
         }
 
         [HttpGet("{id}")]
-         public ActionResult<Pedido> GetPedido(string id)
+        public ActionResult<Pedido> GetPedido(string id)
         {
             Pedido? pedido = dbContext.Pedidos
-                .Include(p => p.Produtos)
+                .Include(p => p.PedidoProdutos).ThenInclude(pp => pp.Produto)
                 .Include(p => p.Cliente)
-                .OrderByDescending(p => p.DataPedido)
                 .FirstOrDefault(p => p.Id == id);
-                
+
             if (pedido is null)
             {
                 return NotFound();
@@ -46,58 +42,62 @@ namespace Codigo_De_Barra.Controllers
         [HttpGet("pedidosPorCliente/{idCliente}")]
         public ActionResult<IEnumerable<Pedido>> GetPedidosPorCliente(string idCliente)
         {
-            Cliente? cliente = dbContext
-                .Clientes
-                .FirstOrDefault(c => c.Id == idCliente);
-            
+            Cliente? cliente = dbContext.Clientes.FirstOrDefault(c => c.Id == idCliente);
+
             if (cliente is null)
             {
                 return BadRequest("Usuário não encontrado");
             }
-            IEnumerable<Pedido> pedidos = dbContext
-                .Pedidos
-                .Include(p => p.Produtos)
+
+            IEnumerable<Pedido> pedidos = dbContext.Pedidos
+                .Include(p => p.PedidoProdutos).ThenInclude(pp => pp.Produto)
                 .Include(p => p.Cliente)
                 .Where(p => p.Cliente.Id.Equals(idCliente))
                 .OrderByDescending(p => p.DataPedido);
+
             if (!pedidos.Any())
             {
                 return NoContent();
             }
+
             return Ok(pedidos);
         }
 
         [HttpPost]
         public ActionResult<Pedido> CreatePedido(PedidoDTO novoPedidoDTO)
         {
-            if (novoPedidoDTO.produtosCodigoDeBarra.Length == 0)
+            if (novoPedidoDTO.produtos == null || !novoPedidoDTO.produtos.Any())
             {
-                return BadRequest("É necessario enviar a lista de produtos");
+                return BadRequest("É necessário enviar a lista de produtos");
             }
 
-            List<Produto> produtos = dbContext
-                .Produtos
-                .Where(
-                    produto => novoPedidoDTO.produtosCodigoDeBarra.Contains(produto.CodigoDeBarra) 
-                ).ToList();
-
-            if (produtos.Count != novoPedidoDTO.produtosCodigoDeBarra.Length)
-            {
-                return BadRequest("Produto não encontrado");
-            }
-
-            Cliente? cliente = dbContext
-                .Clientes
-                .FirstOrDefault(c => c.Cpf == novoPedidoDTO.clientecpf);
-
+            Cliente? cliente = dbContext.Clientes.FirstOrDefault(c => c.Cpf == novoPedidoDTO.clientecpf);
             if (cliente == null)
             {
-                return BadRequest("Usuario inválidado");
+                return BadRequest("Cliente inválido");
             }
 
-            Pedido novoPedido = new Pedido(produtos, cliente, DateTime.Now);
+            var codigos = novoPedidoDTO.produtos.Select(p => p.CodigoDeBarra).ToList();
+            var produtosEncontrados = dbContext.Produtos.Where(p => codigos.Contains(p.CodigoDeBarra)).ToList();
 
+            if (produtosEncontrados.Count != novoPedidoDTO.produtos.Count)
+            {
+                return BadRequest("Um ou mais produtos não foram encontrados");
+            }
 
+            Pedido novoPedido = new Pedido(cliente, DateTime.Now);
+
+            foreach (var produtoDTO in novoPedidoDTO.produtos)
+            {
+                var produto = produtosEncontrados.FirstOrDefault(p => p.CodigoDeBarra == produtoDTO.CodigoDeBarra);
+                if (produto != null)
+                {
+                    novoPedido.PedidoProdutos.Add(new PedidoProduto
+                    {
+                        Produto = produto
+                    });
+                }
+            }
 
             dbContext.Pedidos.Add(novoPedido);
             dbContext.SaveChanges();
@@ -108,36 +108,36 @@ namespace Codigo_De_Barra.Controllers
         [HttpPut("{id}")]
         public IActionResult UpdatePedido(string id, PedidoDTO pedidoAtualizadoDTO)
         {
-            Pedido? pedidoEncontrado = dbContext
-                .Pedidos
-                .Include(p => p.Produtos)
+            var pedido = dbContext.Pedidos
+                .Include(p => p.PedidoProdutos)
+                .ThenInclude(pp => pp.Produto)
                 .FirstOrDefault(p => p.Id == id);
-            
-            if (pedidoEncontrado is null)
+
+            if (pedido == null)
             {
-                return NotFound("Pedido não encontrado"); // NotFound = Cliente mandou errado
-            }
-            if (pedidoAtualizadoDTO.produtosCodigoDeBarra.Length == 0)
-            {
-                return BadRequest("É necessario enviar a lista de produtos"); // BadResquest = Cliente pediu algo que não existe
+                return NotFound("Pedido não encontrado");
             }
 
-            List<Produto> produtosVerificados = dbContext
-                .Produtos
-                .Where(produto => pedidoAtualizadoDTO.produtosCodigoDeBarra.Contains(produto.Id))
-                .ToList();
-
-            if (produtosVerificados.Count != pedidoAtualizadoDTO.produtosCodigoDeBarra.Length)
+            if (pedidoAtualizadoDTO.produtos == null || !pedidoAtualizadoDTO.produtos.Any())
             {
-                return BadRequest("Produto não encontrado");
+                return BadRequest("É necessário enviar a lista de produtos");
             }
 
-            pedidoEncontrado.Produtos.Clear(); // Limpa os produtos do pedido antes de adicionar os 
-            foreach (Produto produtoId in produtosVerificados)
+            // Remove produtos antigos
+            pedido.PedidoProdutos.Clear();
+
+            var codigos = pedidoAtualizadoDTO.produtos.Select(p => p.CodigoDeBarra).ToList();
+            var produtosEncontrados = dbContext.Produtos.Where(p => codigos.Contains(p.CodigoDeBarra)).ToList();
+
+            foreach (var produtoDTO in pedidoAtualizadoDTO.produtos)
             {
-                if (!pedidoEncontrado.Produtos.Contains(produtoId))
+                var produto = produtosEncontrados.FirstOrDefault(p => p.CodigoDeBarra == produtoDTO.CodigoDeBarra);
+                if (produto != null)
                 {
-                    pedidoEncontrado.Produtos.Add(produtoId);
+                    pedido.PedidoProdutos.Add(new PedidoProduto
+                    {
+                        Produto = produto
+                    });
                 }
             }
 
@@ -149,51 +149,45 @@ namespace Codigo_De_Barra.Controllers
         [HttpDelete("{id}")]
         public IActionResult DeletePedido(string id)
         {
-            Pedido? pedidoEncontrado =
-                dbContext
-                .Pedidos
+            var pedido = dbContext.Pedidos
+                .Include(p => p.PedidoProdutos)
                 .FirstOrDefault(p => p.Id == id);
 
-            if (pedidoEncontrado == null)
+            if (pedido == null)
             {
                 return NotFound();
             }
 
-            pedidoEncontrado.Produtos.Clear();
-            dbContext.Pedidos.Remove(pedidoEncontrado);
+            pedido.PedidoProdutos.Clear();
+            dbContext.Pedidos.Remove(pedido);
             dbContext.SaveChanges();
 
             return NoContent();
         }
+
         [HttpDelete("/deleteClientePedido/{idCliente}")]
         public IActionResult DeleteClientePedido(string idCliente)
         {
-            Cliente? clienteEncontrado = dbContext
-                .Clientes
-                .FirstOrDefault(c => c.Id == idCliente);
-            if (clienteEncontrado == null)
+            var cliente = dbContext.Clientes.FirstOrDefault(c => c.Id == idCliente);
+            if (cliente == null)
             {
                 return BadRequest("Usuário não encontrado");
             }
-            
-            Pedido? pedidoEncontrado = dbContext
-                .Pedidos
-                .Include(p => p.Produtos)
-                .OrderByDescending(p => p.DataPedido)
+
+            var pedido = dbContext.Pedidos
+                .Include(p => p.PedidoProdutos)
                 .FirstOrDefault(p => p.Cliente.Id.Equals(idCliente));
-            if (pedidoEncontrado == null)
+
+            if (pedido == null)
             {
                 return NoContent();
             }
-            
-            pedidoEncontrado.Produtos.Clear(); // Limpa os produtos do pedido e evitar erros de chave estrangeira
 
-            dbContext.Pedidos.Remove(pedidoEncontrado);
+            pedido.PedidoProdutos.Clear();
+            dbContext.Pedidos.Remove(pedido);
             dbContext.SaveChanges();
 
             return NoContent();
-
         }
-        
     }
 }

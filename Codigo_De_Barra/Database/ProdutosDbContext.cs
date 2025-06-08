@@ -19,11 +19,22 @@ public partial class ProdutosDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder
-            .UseCollation("utf8mb4_0900_ai_ci")
-            .HasCharSet("utf8mb4");
+        // Chave composta para PedidoProduto
+        modelBuilder.Entity<PedidoProduto>()
+            .HasKey(pp => new { pp.PedidoId, pp.ProdutoId });
+
+        // Relacionamento: Pedido -> PedidoProduto
+        modelBuilder.Entity<PedidoProduto>()
+            .HasOne(pp => pp.Pedido)
+            .WithMany(p => p.PedidoProdutos)
+            .HasForeignKey(pp => pp.PedidoId);
+
+        // Relacionamento: Produto -> PedidoProduto
+        modelBuilder.Entity<PedidoProduto>()
+            .HasOne(pp => pp.Produto)
+            .WithMany() // ou .WithMany(p => p.PedidoProdutos) se existir a navegação no Produto
+            .HasForeignKey(pp => pp.ProdutoId);
 
         base.OnModelCreating(modelBuilder);
     }
 }
-
