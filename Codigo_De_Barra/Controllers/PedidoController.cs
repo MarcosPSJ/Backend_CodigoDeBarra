@@ -70,7 +70,7 @@ namespace Codigo_De_Barra.Controllers
         [HttpPost]
         public ActionResult<Pedido> CreatePedido(PedidoDTO novoPedidoDTO)
         {
-            if (novoPedidoDTO.produtosIds.Length == 0)
+            if (novoPedidoDTO.produtosCodigoDeBarra.Length == 0)
             {
                 return BadRequest("É necessario enviar a lista de produtos");
             }
@@ -78,17 +78,17 @@ namespace Codigo_De_Barra.Controllers
             List<Produto> produtos = dbContext
                 .Produtos
                 .Where(
-                    produto => novoPedidoDTO.produtosIds.Contains(produto.Id) 
+                    produto => novoPedidoDTO.produtosCodigoDeBarra.Contains(produto.CodigoDeBarra) 
                 ).ToList();
 
-            if (produtos.Count != novoPedidoDTO.produtosIds.Length)
+            if (produtos.Count != novoPedidoDTO.produtosCodigoDeBarra.Length)
             {
                 return BadRequest("Produto não encontrado");
             }
 
             Cliente? cliente = dbContext
                 .Clientes
-                .FirstOrDefault(c => c.Id == novoPedidoDTO.clienteId);
+                .FirstOrDefault(c => c.Cpf == novoPedidoDTO.clientecpf);
 
             if (cliente == null)
             {
@@ -117,17 +117,17 @@ namespace Codigo_De_Barra.Controllers
             {
                 return NotFound("Pedido não encontrado"); // NotFound = Cliente mandou errado
             }
-            if (pedidoAtualizadoDTO.produtosIds.Length == 0)
+            if (pedidoAtualizadoDTO.produtosCodigoDeBarra.Length == 0)
             {
                 return BadRequest("É necessario enviar a lista de produtos"); // BadResquest = Cliente pediu algo que não existe
             }
 
             List<Produto> produtosVerificados = dbContext
                 .Produtos
-                .Where(produto => pedidoAtualizadoDTO.produtosIds.Contains(produto.Id))
+                .Where(produto => pedidoAtualizadoDTO.produtosCodigoDeBarra.Contains(produto.Id))
                 .ToList();
 
-            if (produtosVerificados.Count != pedidoAtualizadoDTO.produtosIds.Length)
+            if (produtosVerificados.Count != pedidoAtualizadoDTO.produtosCodigoDeBarra.Length)
             {
                 return BadRequest("Produto não encontrado");
             }
@@ -159,6 +159,7 @@ namespace Codigo_De_Barra.Controllers
                 return NotFound();
             }
 
+            pedidoEncontrado.Produtos.Clear();
             dbContext.Pedidos.Remove(pedidoEncontrado);
             dbContext.SaveChanges();
 
